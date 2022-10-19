@@ -21,7 +21,7 @@ def act_loop(env, agent, num_episodes):
 
             if printing:
                 print('---stage %d---' % t)
-                agent.report()
+                agent.report(t+1,episode)
                 print("state:", state)
 
             action = agent.select_action(state)
@@ -35,15 +35,15 @@ def act_loop(env, agent, num_episodes):
             if done:
                 print("Episode finished after {} timesteps".format(t+1))
                 env.render()
-                agent.report()
+                agent.report(t+1, episode)
                 break
 
     env.close()
 
 
 if __name__ == "__main__":
-    env = simple_grid.DrunkenWalkEnv(map_name="walkInThePark")
-    # env = simple_grid.DrunkenWalkEnv(map_name="theAlley")
+    # env = simple_grid.DrunkenWalkEnv(map_name="walkInThePark")
+    env = simple_grid.DrunkenWalkEnv(map_name="theAlley")
     num_a = env.action_space.n
 
     if (type(env.observation_space)  == gym.spaces.discrete.Discrete):
@@ -52,7 +52,18 @@ if __name__ == "__main__":
         raise("Qtable only works for discrete observations")
 
     discount = DEFAULT_DISCOUNT
-    ql = QLearner(num_o, num_a, discount) #<- QTable
+    ql = QLearner(num_o, num_a, discount, adaptive_exploitation= True) #<- QTable
     act_loop(env, ql, NUM_EPISODES)
 
+    ql.get_timestamp().sort()
+
+    dict = ql.get_goal_dictionary()
+    sorted_dict = sorted(dict, key = lambda t: t[1])
+
+    answer = [sorted_dict[0]]
+
+    for a in answer:
+        print("episode with minimum steps", a[0])
+
+    print("minimum steps:", ql.get_timestamp()[0])
 
