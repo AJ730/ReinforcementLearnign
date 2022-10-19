@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-NUM_EPISODES = 1
+NUM_EPISODES = 1000
 MAX_EPISODE_LENGTH = 500
 DEFAULT_DISCOUNT = 0.9
 EPSILON = 0.05
@@ -26,7 +26,6 @@ class QLearner():
         self.episodes = NUM_EPISODES
         self.episode_length = MAX_EPISODE_LENGTH
         self.episilon = EPSILON
-        self.counter = 0
 
     def reset_episode(self):
         """
@@ -40,22 +39,24 @@ class QLearner():
         Update the Q-value based on the state, action, next state and reward.
         """
         if done:
-            self.Q[next_state, action] = (1 - self.learning_rate) * self.Q[state, action] + self.learning_rate * reward
+            self.Q[state, action] = (1 - self.learning_rate) * self.Q[state, action] + self.learning_rate * reward
+            return
 
-        self.Q[next_state, action] = (1 - self.learning_rate) * self.Q[state, action] + \
+        self.Q[state, action] = (1 - self.learning_rate) * self.Q[state, action] + \
                                  self.learning_rate * (
-                                         reward + self.discount * np.max(self.Q[state,:]))
-
-        print(self.Q)
+                                         reward + self.discount * np.max(self.Q[next_state]))
+        #
+        # print(self.Q)
 
     def select_action(self, state):
         """
         Returns an action, selected based on the current state
         """
-        # if np.any(self.Q == 0):
-        #     return self.get_random_action()
 
-        if random.uniform(0, 1)  < self.episilon:
+        if np.all(np.array(self.Q[state, :]) == np.array(self.Q[state, :])[0]):
+            return self.get_random_action()
+
+        if random.random()  < self.episilon:
             return self.get_random_action()
         else:
             return self.get_best_action(state)
@@ -64,7 +65,7 @@ class QLearner():
         return np.random.choice(self.action_space)
 
     def get_best_action(self, state):
-        return np.argmax(self.Q[state, :])
+        return np.argmax(self.Q[state])
 
     def report(self):
         """
