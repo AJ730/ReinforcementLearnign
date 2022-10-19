@@ -72,3 +72,5 @@ class QLearner():
         Function to print useful information, printed during the main loop
         """
         print("---")
+
+
