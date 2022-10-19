@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 
-NUM_EPISODES = 1000
+NUM_EPISODES = 1
 MAX_EPISODE_LENGTH = 500
 DEFAULT_DISCOUNT = 0.9
 EPSILON = 0.05
@@ -40,11 +40,11 @@ class QLearner():
         Update the Q-value based on the state, action, next state and reward.
         """
         if done:
-            self.Q[state, action] = (1 - self.learning_rate) * self.Q[state, action] + self.learning_rate * reward
+            self.Q[next_state, action] = (1 - self.learning_rate) * self.Q[state, action] + self.learning_rate * reward
 
-        self.Q[state, action] += (1 - self.learning_rate) * self.Q[state, action] + \
+        self.Q[next_state, action] = (1 - self.learning_rate) * self.Q[state, action] + \
                                  self.learning_rate * (
-                                         reward + self.discount * np.argmax(self.select_action(next_state)))
+                                         reward + self.discount * np.max(self.Q[state,:]))
 
         print(self.Q)
 
@@ -52,10 +52,10 @@ class QLearner():
         """
         Returns an action, selected based on the current state
         """
-        if self.counter == 0:
-            return self.get_random_action()
+        # if np.any(self.Q == 0):
+        #     return self.get_random_action()
 
-        if random.random() < self.episilon:
+        if random.uniform(0, 1)  < self.episilon:
             return self.get_random_action()
         else:
             return self.get_best_action(state)
